@@ -1,4 +1,4 @@
-# Multi-Blockchain Industry Visualization
+# Agent Hub POC 1
 
 ## Project Overview
 
