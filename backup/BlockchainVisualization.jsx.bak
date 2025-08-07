@@ -1,0 +1,804 @@
+import React, { useEffect, useRef, useState } from 'react';
+import * as d3 from 'd3';
+import { useTheme } from "@/components/ThemeProvider";
+import { ChevronDown, Search as SearchIcon } from "lucide-react";
+
+// Import department data
+import { aircraftManagement } from "../data/aircraftManagement";
+import { blockfrost } from "../data/blockfrost";
+import { corporateSecurity } from "../data/corporateSecurity";
+import { technology } from "../data/technology";
+import { research } from "../data/research";
+import { product } from "../data/product";
+import { peopleTalent } from "../data/peopleTalent";
+import { operations } from "../data/operations";
+import { midnight } from "../data/midnight";
+import { cultureCommunications } from "../data/cultureCommunications";
+import { ecosystemCommunity } from "../data/ecosystemCommunity";
+import { engineering } from "../data/engineering";
+import { executive } from "../data/executive";
+import { finance } from "../data/finance";
+import { hoskinsonFamilyOffice } from "../data/hoskinsonFamilyOffice";
+import { iog } from "../data/iog";
+import { legal } from "../data/legal";
+import { marketing } from "../data/marketing";
+
+const BlockchainVisualization = ({ onItemSelect }) => {
+  const svgRef = useRef(null);
+  const [root, setRoot] = useState(null);
+  const [searchData, setSearchData] = useState([]);
+  const { theme } = useTheme();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showRefreshButton, setShowRefreshButton] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [activeWorkflow, setActiveWorkflow] = useState(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  
+  // These references will be set within useEffect and used by the zoom functions
+  const svgRef2 = useRef(null);
+  const gRef = useRef(null);
+  const nodeRef = useRef(null);
+  const labelRef = useRef(null);
+  const viewRef = useRef(null);
+  const focusRef = useRef(null);
+  const zoomTextRef = useRef(null);
+  const widthRef = useRef(0);
+  const heightRef = useRef(0);
+  
+  // Helper function to get theme color
+  const getThemeColor = (variable) => {
+    return getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+  };
+  
+  // Helper function to update zoom indicator text
+  const updateZoomIndicator = (newZoomLevel) => {
+    setZoomLevel(newZoomLevel);
+    if (zoomTextRef.current) {
+      zoomTextRef.current.text(`Zoom: ${newZoomLevel}x`);
+    }
+  };
+
+  // Define zoom functions at component level so they're accessible everywhere
+  const zoomTo = (v) => {
+    if (!gRef.current || !nodeRef.current || !labelRef.current) return;
+    
+    // Calculate the scale factor for zoom
+    const k = Math.min(widthRef.current, heightRef.current) / v[2];
+
+    // Save the current view
+    viewRef.current = v;
+
+    // Center the visualization with proper calculations
+    const centerX = widthRef.current / 2;
+    const centerY = heightRef.current / 2;
+    
+    // Apply transformation to ensure proper centering
+    gRef.current.attr("transform", `translate(${centerX},${centerY})`);
+    
+    // Transform nodes with proper centering
+    nodeRef.current.attr("transform", d => `translate(${(d.x - v[0]) * k},${(d.y - v[1]) * k})`);
+    nodeRef.current.attr("r", d => d.r * k);
+    
+    // Transform labels with the same calculations
+    labelRef.current.attr("transform", d => `translate(${(d.x - v[0]) * k},${(d.y - v[1]) * k})`);
+    
+    // Update zoom level indicator
+    const newZoomLevel = Math.round(k * 10) / 10;
+    updateZoomIndicator(newZoomLevel);
+  };
+
+  const zoom = (event, d) => {
+    if (!svgRef2.current || !labelRef.current || !d) return;
+    
+    // Special highlighting only for search results (not for regular clicking)
+    if (event.isFromSearch && nodeRef.current) {
+      // Remove highlight from all nodes first
+      nodeRef.current
+        .attr("stroke", d => d.depth === 1 ? `hsla(var(--border), 0.5)` : null)
+        .attr("stroke-width", d => d.depth === 1 ? 0.5 : null)
+        .attr("filter", null);
+      
+      // Add highlight to the found node with modern glow effect
+      d3.select(event.targetNode)
+        .attr("stroke", `hsl(var(--accent))`)
+        .attr("stroke-width", 3)
+        .attr("filter", "drop-shadow(0 0 6px hsla(var(--accent), 0.5))");
+    }
+    
+    const focus0 = focusRef.current;
+    focusRef.current = d;
+    
+    // Define transition duration based on zoom distance
+    const transitionDuration = d === focus0 ? 0 : 750;
+
+    // Extract coordinates for zoomTo
+    const targetView = [d.x, d.y, d.r * 2];
+
+    // Apply the zoom transition
+    svgRef2.current.transition()
+      .duration(transitionDuration)
+      .tween("zoom", () => {
+        // Create interpolator between current view and target view
+        const i = d3.interpolateZoom(viewRef.current || targetView, targetView);
+        return t => zoomTo(i(t));
+      });
+  };
+
+  // Main rendering effect for the visualization
+  useEffect(() => {
+    if (!svgRef.current) return;
+
+    const data = {
+      name: "IOG",
+      children: [
+        aircraftManagement,
+        blockfrost,
+        corporateSecurity,
+        cultureCommunications,
+        ecosystemCommunity,
+        engineering,
+        executive,
+        finance,
+        hoskinsonFamilyOffice,
+        iog,
+        legal,
+        marketing,
+        midnight,
+        operations,
+        peopleTalent,
+        product,
+        research,
+        technology,
+      ],
+    };
+
+    // Set SVG dimensions to match the container
+    const width = svgRef.current.clientWidth;
+    const height = svgRef.current.clientHeight;
+    widthRef.current = width;
+    heightRef.current = height;
+    
+    // Clear previous SVG content
+    d3.select(svgRef.current).selectAll("*").remove();
+
+    // Create root hierarchy
+    const hierarchy = d3.hierarchy(data)
+      .sum(d => (d.size !== undefined) ? d.size : 1);
+
+    // Create pack layout
+    const pack = d3.pack()
+      .size([width, height])
+      .padding(3);
+
+    // Generate data structure for visualization
+    const root = pack(hierarchy);
+    
+    // Save reference to root for later use
+    setRoot(root);
+
+    // Create SVG with D3
+    const svg = d3.select(svgRef.current)
+      .attr("viewBox", `0 0 ${width} ${height}`)
+      .style("font-family", "var(--font-sans)")
+      .style("user-select", "none");
+    
+    svgRef2.current = svg;
+
+    // Create a container for all elements
+    const g = svg.append("g");
+    gRef.current = g;
+
+    // Disable built-in d3 zoom to prevent two-finger drag shifting
+    svg.call(
+      d3.zoom()
+        .on("zoom", null)
+    );
+    
+    // Define node stroke and shadow filters for consistent interaction styling
+    const defs = svg.append("defs");
+    
+    // Filter for search highlight glow
+    defs.append("filter")
+      .attr("id", "glow")
+      .append("feDropShadow")
+      .attr("dx", 0)
+      .attr("dy", 0)
+      .attr("stdDeviation", 2.5)
+      .attr("flood-color", `hsl(var(--accent))`)
+      .attr("flood-opacity", 0.8);
+
+    // Create all circles
+    const node = g.selectAll("circle")
+      .data(root.descendants())
+      .join("circle")
+      .attr("fill", d => getNodeColor(d))
+      .attr("stroke", d => d.depth === 1 ? `hsla(var(--border), 0.5)` : null)
+      .attr("stroke-width", d => d.depth === 1 ? 0.5 : null)
+      .style("cursor", d => !d.children ? "pointer" : "default")
+      .style("transition", "stroke 0.2s ease, fill 0.3s ease");
+    
+    nodeRef.current = node;
+
+    // Create text labels with improved visibility
+    const label = g.selectAll("text")
+      .data(root.descendants())
+      .join("text")
+      .style("fill", theme === 'dark' 
+        ? d => d.depth <= 1 ? "hsl(var(--foreground))" : "hsl(var(--foreground-muted))"
+        : d => d.depth <= 1 ? "hsl(var(--foreground))" : "hsl(var(--foreground-muted))")
+      .style("pointer-events", "none")
+      .style("text-anchor", "middle")
+      .style("font-size", d => {
+        // Adjust font size based on depth and importance
+        if (d.depth === 0) return "14px";
+        if (d.depth === 1) return "12px";
+        if (d.depth === 2) return "10px";
+        return "8px";
+      })
+      .style("font-weight", d => d.depth <= 1 ? "600" : "400") // Make department names bold
+      .style("opacity", d => {
+        // Improve readability by only showing labels for larger nodes
+        if (d.depth === 0) return 1;
+        if (d.depth === 1) return 1;
+        if (d.depth === 2 && d.r > 15) return 1;
+        if (!d.children && d.r > 8) return 0.9;
+        return 0;
+      })
+      .text(d => d.data.name);
+    
+    labelRef.current = label;
+
+    // Create searchable data
+    const searchableNodes = root.descendants().filter(d => !d.children);
+    const searchData = searchableNodes.map(d => ({
+      id: d.data.name,
+      name: d.data.name,
+      department: d.parent ? d.parent.data.name : "",
+      node: d
+    }));
+    
+    setSearchData(searchData);
+    
+    // Add click handler to nodes for zooming
+    node.on("click", (event, d) => {
+      event.stopPropagation();
+      zoom(event, d);
+    });
+
+    // Reset view when clicking on background
+    svg.on("click", (event) => {
+      // Only reset if clicking directly on SVG, not on a node
+      if (event.target === svgRef.current) {
+        zoom(event, root);
+      }
+    });
+
+    // Initialize view with root node
+    zoomTo([root.x, root.y, root.r * 2]);
+    
+    // Hover effect for nodes with modern styling
+    node
+      .on("mouseover", function(event, d) {
+        if (!d.children) { // Only for leaf nodes (employees)
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr("stroke", "hsl(var(--primary))")
+            .attr("stroke-width", 2)
+            .attr("stroke-opacity", 0.8);
+          
+          if (onItemSelect && d.data) {
+            onItemSelect({
+              name: d.data.name,
+              role: d.data.role || "N/A",
+              github: d.data.github || "N/A",
+              twitter: d.data.twitter || "N/A",
+              department: d.parent ? d.parent.data.name : "Unknown"
+            });
+          }
+        }
+      })
+      .on("mouseout", function(event, d) {
+        if (!d.children && !(d === focusRef.current)) {
+          d3.select(this)
+            .transition()
+            .duration(500)
+            .attr("stroke", d.depth === 1 ? `hsla(var(--border), 0.5)` : null)
+            .attr("stroke-width", d.depth === 1 ? 0.5 : null)
+            .attr("stroke-opacity", 1);
+        }
+      });
+
+    // Set initial focus
+    focusRef.current = root;
+    
+    // Return cleanup function
+    return () => {
+      if (svgRef.current) {
+        d3.select(svgRef.current).selectAll("*").remove();
+      }
+    };
+  }, [theme, onItemSelect]);
+    
+    const focus0 = focusRef.current;
+    focusRef.current = d;
+
+    const transition = svgRef2.current.transition()
+        .duration(event.altKey ? 7500 : 750)
+        .tween("zoom", d => {
+          // Use different zoom levels based on whether this is from search or regular click
+          let targetRadius;
+          if (event.isFromSearch) {
+            // For search results, zoom to approximately 5.19x
+            targetRadius = focusRef.current.r * 20;
+          } else {
+            // For regular clicks, use the original zoom behavior
+            targetRadius = focusRef.current.r * 2;
+          }
+          const i = d3.interpolateZoom(viewRef.current, [focusRef.current.x, focusRef.current.y, targetRadius]);
+          return t => {
+            const v = i(t);
+            zoomTo(v);
+            // Update zoom level
+            // Update zoom level display
+            const newZoomLevel = (widthRef.current / v[2]).toFixed(2);
+            setZoomLevel(newZoomLevel);
+            // Use the updateZoomIndicator function for consistent zoom text updates
+            updateZoomIndicator(newZoomLevel);
+          };
+        });
+
+    // Handle labels differently based on whether this is a search result or regular click
+    if (event.isFromSearch) {
+      // For search results, always show the label
+      labelRef.current
+        .filter(function(d) { return d === focusRef.current; })
+        .transition(transition)
+        .style("fill-opacity", 1)
+        .style("font-weight", "bold")
+        .style("font-size", "14px")
+        .style("display", "inline");
+    } else {
+      // For regular clicks, use the original label behavior
+      labelRef.current
+        .filter(function(d) { return d.parent === focusRef.current || this.style.display === "inline"; })
+        .transition(transition)
+        .style("fill-opacity", d => d.parent === focusRef.current ? 1 : 0)
+        .on("start", function(d) { if (d.parent === focusRef.current) this.style.display = "inline"; })
+        .on("end", function(d) { if (d.parent !== focusRef.current) this.style.display = "none"; });
+    }
+  };
+
+  useEffect(() => {
+    if (svgRef.current) {
+      const svg = d3.select(svgRef.current);
+      svgRef2.current = svg;
+      svg.selectAll("*").remove(); // Clear previous render
+
+      const width = svg.node().getBoundingClientRect().width;
+      const height = svg.node().getBoundingClientRect().height;
+      widthRef.current = width;
+      heightRef.current = height;
+
+      svg.attr("viewBox", [0, 0, width, height])
+         .attr("width", "100%")
+         .attr("height", "100%")
+         .attr("style", "max-width: 100%; height: auto; font: 10px sans-serif;");
+
+      // Add background rectangle
+      const backgroundRect = svg.append("rect")
+         .attr("width", "100%")
+         .attr("height", "100%")
+         .attr("fill", theme === 'dark' ? "#23252F" : "#F8F9FA");
+
+      // Define the gradients
+      const defs = svg.append("defs");
+
+      // Add drop shadow filter
+      const filter = defs.append("filter")
+        .attr("id", "drop-shadow")
+        .attr("height", "130%");
+
+      filter.append("feGaussianBlur")
+        .attr("in", "SourceAlpha")
+        .attr("stdDeviation", 3)
+        .attr("result", "blur");
+
+      filter.append("feOffset")
+        .attr("in", "blur")
+        .attr("dx", -3)
+        .attr("dy", 3)
+        .attr("result", "offsetBlur");
+
+      const feComponentTransfer = filter.append("feComponentTransfer")
+        .attr("in", "offsetBlur")
+        .attr("result", "coloredBlur");
+
+      feComponentTransfer.append("feFuncA")
+        .attr("type", "linear")
+        .attr("slope", 0.225);
+      const feMerge = filter.append("feMerge");
+
+    // Create text labels with improved visibility
+    const label = g.selectAll("text")
+      .data(root.descendants())
+      .join("text")
+      .style("fill", theme === 'dark' 
+        ? d => d.depth <= 1 ? getThemeColor('--foreground') : getThemeColor('--foreground-muted')
+        : d => d.depth <= 1 ? getThemeColor('--foreground') : getThemeColor('--foreground-muted'))
+      .style("pointer-events", "none")
+      .style("text-anchor", "middle")
+      .style("font-size", d => {
+        // Adjust font size based on depth and importance
+        if (d.depth === 0) return "14px";
+        if (d.depth === 1) return "12px";
+        if (d.depth === 2) return "10px";
+        return "8px";
+      })
+      .style("font-weight", d => d.depth <= 1 ? "600" : "400") // Make department names bold
+      .text(d => d.data.name)
+      .style("opacity", d => {
+        // Improve readability by only showing labels for larger nodes
+        if (d.depth === 0) return 1;
+        if (d.depth === 1) return 1;
+        if (d.depth === 2 && d.r > 15) return 1;
+        if (!d.children && d.r > 8) return 0.9;
+        return 0;
+      });
+    
+    labelRef.current = label;
+
+    // Create searchable data
+    const searchableNodes = root.descendants().filter(d => !d.children);
+    const searchData = searchableNodes.map(d => ({
+      id: d.data.name,
+      name: d.data.name,
+      department: d.parent ? d.parent.data.name : "",
+      node: d
+    }));
+    
+    setSearchData(searchData);
+    
+    // Add click handler to nodes for zooming
+    node.on("click", (event, d) => {
+      event.stopPropagation();
+      zoom(event, d);
+    });
+
+    // Reset view when clicking on background
+    svg.on("click", (event) => {
+      // Only reset if clicking directly on SVG, not on a node
+      if (event.target === svgRef.current) {
+        zoom(event, root);
+      }
+    });
+
+    // Initialize view with root node
+    zoomTo([root.x, root.y, root.r * 2]);
+    
+    // Get accent and primary colors for consistent hover effects
+    const accentColor = `hsla(${getThemeColor('--accent')}, 0.8)`;
+    const primaryColor = `hsla(${getThemeColor('--primary')}, 0.8)`;
+    
+    // Hover effect for nodes with modern styling
+    node
+      .on("mouseover", function(event, d) {
+        if (!d.children) { // Only for leaf nodes (employees)
+          d3.select(this)
+            .transition()
+            .duration(200)
+            .attr("stroke", primaryColor)
+            .attr("stroke-width", 2)
+            .attr("stroke-opacity", 0.8);
+          
+          if (onItemSelect && d.data) {
+            onItemSelect({
+              name: d.data.name,
+              role: d.data.role || "N/A",
+              github: d.data.github || "N/A",
+              twitter: d.data.twitter || "N/A",
+              department: d.parent ? d.parent.data.name : "Unknown"
+            });
+          }
+        }
+      })
+      .on("mouseout", function(event, d) {
+        if (!d.children && !(d === focusRef.current)) {
+          d3.select(this)
+            .transition()
+            .duration(500)
+            .attr("stroke", d.depth === 1 ? `hsla(${getThemeColor('--border')}, 0.5)` : null)
+            .attr("stroke-width", d.depth === 1 ? 0.5 : null)
+            .attr("stroke-opacity", 1);
+        }
+      });
+
+    // Set initial focus
+    focusRef.current = root;
+    
+    // Return cleanup function
+    return () => {
+      if (svgRef.current) {
+        d3.select(svgRef.current).selectAll("*").remove();
+      }
+    };
+  }, [theme, onItemSelect]);
+  
+  // Handle search functionality
+  const handleSearch = (searchTerm) => {
+    if (!searchTerm || searchTerm.length < 2) return;
+    
+    const normalizedSearch = searchTerm.toLowerCase();
+    const matchingNodes = searchData.filter(item => 
+      item.name.toLowerCase().includes(normalizedSearch) ||
+      item.department.toLowerCase().includes(normalizedSearch)
+    );
+    
+    if (matchingNodes.length > 0) {
+      // Take the first match for now
+      const firstMatch = matchingNodes[0];
+      // Create a synthetic event to pass to zoom
+      const event = { isFromSearch: true, targetNode: nodeRef.current.filter(d => d === firstMatch.node).node() };
+      zoom(event, firstMatch.node);
+      setToastMessage(`Found ${matchingNodes.length} matches`);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    }
+          })
+          .text(d => {
+            if (d.data.name && d.data.name.length > 0) {
+              // Display full names for employees (leaf nodes)
+              if (!d.children) {
+                return d.data.name;
+              }
+              // Use abbreviations for non-leaf nodes
+              const nameWords = d.data.name.split(' ');
+              return nameWords.length > 1 ? `${nameWords[0]} ${nameWords[1].charAt(0)}.` : nameWords[0];
+            }
+            return "";
+          });
+
+      labelRef.current = label;
+
+      // Original click behavior - simply zoom to root when clicking background
+      svg.on("click", (event) => zoom(event, rootNode));
+
+      // Initial zoom as in original code
+      zoomTo([focusRef.current.x, focusRef.current.y, focusRef.current.r * 2]);
+
+      // Create zoom level indicator text in bottom right corner
+      // Use the existing width and height variables
+      
+      const zoomLevelText = svg.append("text")
+        .attr("x", widthRef.current - 90) // Position from right edge
+        .attr("y", heightRef.current - 15) // Position from bottom edge
+        .attr("text-anchor", "start")
+        .attr("fill", theme === 'dark' ? "hsl(var(--foreground))" : "hsl(var(--foreground))")
+        .attr("font-size", "14px")
+        .attr("font-family", "var(--font-sans)")
+        .text(`Zoom: ${zoomLevel}x`);
+
+      // Store reference to zoom text
+      zoomTextRef.current = zoomLevelText;
+
+      // Disable the built-in zoom and drag behavior completely
+      // Instead, we'll use our custom zoom functions to control the visualization
+      // This prevents the unintended shifting when using two-finger drag
+      
+      // We don't need d3.zoom behavior since we have our custom zoom
+      // functions that work with our circular packing visualization
+
+      // Initial zoom level
+      setZoomLevel(1.00);
+    }
+  }, [theme]); // Add theme as a dependency
+
+  const handleSearch = (searchTerm) => {
+    if (root) {
+      const searchResult = root.descendants().find(node => 
+        node.data.name.toLowerCase() === searchTerm.toLowerCase()
+      );
+      if (searchResult) {
+        onItemSelect(searchResult.data);
+        // Create event with special flag to indicate this is from search
+        const event = { altKey: false, isFromSearch: true };
+        zoom(event, searchResult);
+      }
+    }
+  };
+
+  const handleAgentWorkflow = (workflow) => {
+    console.log("Selected workflow:", workflow);
+    if (workflow === 'Show me the Actors most likely to use NIGHT token') {
+      highlightActors();
+      setToastMessage('Results: These are the Actors most likely to use NIGHT token.');
+    } else if (workflow === 'Show the highest social influence Actors') {
+      highlightGalxeNodes();
+      setToastMessage('Results: These are the Actors who scored the highest against social influence attributes.');
+    }
+    setShowToast(true);
+    setShowRefreshButton(true);
+    setActiveWorkflow(workflow);
+    setIsDropdownOpen(false);
+  };
+
+  const highlightActors = () => {
+        let actors = ['Hosky', 'Project Catalyst', 'Lido Nation', 'Able Pool', 'MMKR', 'Eystein Harsen', 'Summon', 'Lema', 'Drip Dropz Lloyd Duhon', 'ADA Whale', 'PORT', 'AXO', 'Clay Nation', 'NMKR', 'DC Spark', 'HashCash Consultants', 'Cardano Cube', 'Blaize', 'Jump Crypto', 'Justin Ðrake', 'Parity Technologies', 'OOOO', 'WAN Chain', 'EverClear (was connext) ', 'WMT', 'Karl Floersch', 'Marek Olszewski', 'Sergey Nazarov', 'Robert Leshner', 'Rune Christensen', 'Lucas Macchiavell', 'Adam Dean', 'Ryan Williams', 'IAmX', 'ChainSafe Systems', 'OpenZeppelin', 'Set Labs', '1inch Network', 'TX Pipe', 'Arweave', 'Genius Yield', 'Newm', 'ORCFAX', 'Fireblocks', 'OpenOcean', 'PinkSale', 'Streamflow', 'Snowflake', 'ConsenSys', 'Drip Dropz', 'ADA Mail', 'Moonbeam', 'ALCHEMY', 'CHAINLINK', 'FIREBLOCKS', 'QUICKNODE', 'THIRDWEB', '4EVERLAND', 'Tatum', 'thirdweb', 'Civic', 'Human Protocol', 'Web3Auth', 'Umbrella Network', 'Kudelski Security', 'Halborn', 'Transak', 'Magic', 'Moralis', 'Lace', 'Liqwid', 'Alchemy', 'Paima Studio', 'Mobilunity', 'MLabs', 'Sundaeswap', 'MinSwap', 'IAMX Collabs', 'Ada Handle', 'Fungible Systems', 'CodePoets', 'Metaplex', 'Solanium', 'Andreas Antonopoulos', 'Adam Rusch', 'Nick Johnson (nick.eth)', 'Kraken', 'Aya Miyaguchi (ayamiya.eth)', 'LenFi', 'USDM', 'Hayden Adams', 'Stani Kulechov', 'Kain Warwick', 'Tomasz K. Stańczak', 'CIVIC', 'CryptoWendy', 'Helena', 'James Hancock', 'Kartik Talwar', 'Lion ⟠ dapplion.eth', 'Paris Rouzati', 'timbeiko.eth', 'Sheldon Evans', 'Abhik Nag', 'Protolambda (proto.eth)', 'Hsiao-Wei Wang', 'Army of Spies', 'Rick McCracken', 'Chainway Labs', 'ZeroSync', 'Intersect', 'Alchemy', 'BitcoinL2Labs', 'DegenLab', 'Mechanism', 'Zondax', 'GALXE', 'Chain', 'QuickNode', 'Aleph.im', 'Arweave', 'Lit Protocol', 'Spheron', 'Pyth', 'Wormhole', 'Chainlink', 'Bitcoin Startup Lab', 'Spiral', 'Bitcoin Frontier Fund', 'SNEK', 'WORMHOLE', 'Starch Industries', 'Avolox', 'JPG Store', 'Conuchias', 'Book.io', 'Labrys', 'ChainLink', 'Chris Dixon (cdixon)', 'Infura', 'IAGON', 'Biconomy', 'ENCOIN', 'CertiK', 'Péter Szilágyi (karalabe.eth)', 'Chainsafe.io', 'Preston Van Loon (prestonvanloon.eth)', 'VYFinance', 'Indigo', 'Blockfrost', 'Alchemy', 'QuickNode', 'Blockdaemon', 'CoinFabrik', 'ZK FOLD', 'Optim Finance', 'Cardano Spot', 'LIDO Pools', 'ECP (Earn Coin Pool)', 'Stake with pride', 'Butane', 'William Entriken', 'SOC', 'Lighthouse', 'Pantera Capital', 'Eternl', 'Exodus', 'Vesper', 'Martin (Atada)', 'Mike Horwat', 'Oxford Blockchain', 'Mike Horwat', 'Weavechain.com', 'Fireblocks'];
+
+    d3.select(svgRef.current)
+      .selectAll("circle")
+      .filter(d => actors.includes(d.data.name))
+      .transition()
+      .duration(500)
+      .attr("fill", "rgb(0, 255, 0)");
+  };
+
+  const highlightGalxeNodes = () => {
+    let actors = ['ADA Whale','CryptoWendy','Andreas Antonopoulos','MMKR','Project Catalyst','Abhik Nag','Adam Dean','Army of Spies','Cardano Cube','Cardano Spot','Hosky','Lido Nation','Rick McCracken','Helena','James Hancock','Kartik Talwar','Lion ⟠ dapplion.eth','Paris Rouzati','timbeiko.eth','Aya Miyaguchi (ayamiya.eth)','Chris Dixon (cdixon)','Karl Floersch','Preston Van Loon (prestonvanloon.eth)','Protolambda (proto.eth)','Tomasz K. Stańczak','Justin Ðrake','Hsiao-Wei Wang','Nick Johnson (nick.eth)','Sheldon Evans']
+        d3.select(svgRef.current)
+          .selectAll("circle")
+          .filter(d => actors.includes(d.data.name))
+          .transition()
+          .duration(500)
+          .attr("fill", "rgb(255, 105, 180)"); // Bright pink color
+      };
+
+  const highlightLighthouseNodes = () => {
+    let actors = ['ADA Whale','GALXE','Exodus','MIT Digital Currency Initiative','BitMex']
+    d3.select(svgRef.current)
+      .selectAll("circle")
+      .filter(d => actors.includes(d.data.name))
+      .transition()
+      .duration(500)
+      .attr("fill", "rgb(229, 255, 0)"); // Neon yellow color
+  };
+
+  const resetHighlight = () => {
+    d3.select(svgRef.current)
+      .selectAll("circle")
+      .transition()
+      .duration(500)
+      .attr("fill", d => getNodeColor(d));
+    setShowRefreshButton(false);
+    setActiveWorkflow(null);
+    setShowToast(false);
+  };
+
+  function getNodeColor(d) {
+    // Get CSS variable colors from our theme
+    const getThemeColor = (variable) => {
+      return getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+    };
+
+    if (theme === 'dark') {
+      // Dark theme colors using button styling from settings page
+      if (d.depth === 1) {
+        // Department level - use the same styling as dark mode buttons
+        return "hsla(var(--secondary), 0.8)"; // Match dark mode button background
+      }
+      if (d.depth === 2) return "hsla(var(--secondary), 0.6)"; // Teams
+      if (d.depth === 3) return "hsla(var(--accent), 0.5)"; // Sub-teams
+      if (!d.children) return "hsla(var(--primary), 0.7)"; // Employees
+      
+      // Use smooth color interpolation for intermediate depths
+      return d3.interpolateHsl(
+        "hsla(var(--primary), 0.7)", 
+        "hsla(var(--accent), 0.5)"
+      )(d.depth / 5);
+    } else {
+      // Light theme colors - match button styling from settings
+      if (d.depth === 1) {
+        // Department level - use the same styling as light mode buttons
+        return "hsla(var(--secondary), 0.9)"; // Match light mode button background
+      }
+      if (d.depth === 2) return "hsla(var(--card), 0.8)"; // Teams 
+      if (d.depth === 3) return "hsla(var(--accent), 0.3)"; // Sub-teams
+      if (!d.children) return "hsla(var(--primary), 0.5)"; // Employees
+      
+      // Use smooth color interpolation for intermediate depths
+      return d3.interpolateHsl(
+        "hsla(var(--secondary), 0.9)", 
+        "hsla(var(--primary), 0.5)"
+      )(d.depth / 5);
+    }
+  }
+  return (
+    <div className="relative w-full h-full">
+      {/* Search input - top overlay */}
+      <div className="absolute top-4 right-4 z-20 w-64">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+          </div>
+          <input
+            type="text"
+            placeholder="Search employees..."
+            className="w-full py-2 pl-10 pr-4 rounded-full bg-secondary text-secondary-foreground border-none focus:ring-2 focus:ring-primary focus:outline-none text-sm transition-all duration-200"
+            onChange={(e) => handleSearch(e.target.value)}
+          />
+        </div>
+      </div>
+      
+      {/* Toast Message - Modern notification */}
+      {showToast && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-30 transition-all duration-300 ease-in-out">
+          <div className="modern-card shadow-lg p-4 flex items-center justify-between space-x-2 max-w-md">
+            <p className="text-sm">{toastMessage}</p>
+            <button
+              onClick={() => setShowToast(false)}
+              className="text-muted-foreground hover:text-foreground focus:outline-none"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* Main visualization container */}
+      <div className="w-full h-full bg-background rounded-lg overflow-hidden relative">
+        <svg ref={svgRef} className="w-full h-full relative z-10"></svg>
+        
+        {/* Zoom indicator - modern style */}
+        <div className="absolute bottom-4 right-4 z-20">
+          <div className="bg-background-secondary/70 backdrop-blur-sm px-3 py-1 rounded-full text-sm text-muted-foreground">
+            Zoom: {zoomLevel}x
+          </div>
+        </div>
+        
+        {/* AI Agents Dropdown and Refresh Button */}
+        <div className="absolute bottom-4 left-4 z-20 flex items-center gap-2">
+          <div className="relative">
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="btn-secondary flex items-center gap-1 px-3 py-2 rounded-md text-sm transition-all duration-200"
+            >
+              <span>Run AI Agents</span>
+              <ChevronDown className="h-4 w-4 opacity-70" />
+            </button>
+            
+            {isDropdownOpen && (
+              <div className="absolute bottom-full left-0 mb-2 w-64 modern-card p-2 shadow-lg">
+                <div className="text-sm font-medium mb-2 px-2">AI Agents</div>
+                <input 
+                  type="text" 
+                  placeholder="Search agents..." 
+                  className="w-full mb-2 p-2 rounded bg-background text-sm border-border border"
+                />
+                <div className="space-y-1 max-h-48 overflow-y-auto">
+                  {['Show me the Actors most likely to use NIGHT token', 'Show the highest social influence Actors'].map((workflow, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        handleAgentWorkflow(workflow);
+                        setIsDropdownOpen(false);
+                      }}
+                      className="w-full text-left p-2 rounded hover:bg-accent/10 text-sm transition-colors duration-200"
+                    >
+                      {workflow}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {showRefreshButton && (
+            <button
+              onClick={resetHighlight}
+              className="btn-secondary px-3 py-2 rounded-md text-sm transition-all duration-200"
+            >
+              Refresh
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default BlockchainVisualization;

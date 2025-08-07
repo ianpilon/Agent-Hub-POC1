@@ -1,0 +1,43 @@
+export const peopleTalent = {
+  "name": "People & Talent Acquisition",
+  "description": {
+    "briefDefinition": "People & Talent Acquisition department with HR, recruiting, and people operations professionals.",
+    "keyStatistics": [],
+    "majorEcosystemComponents": [],
+    "keyOrganizations": [],
+    "notableFeatures": [],
+    "ecosystemHighlights": {},
+    "communityEngagement": [],
+    "interoperability": [],
+    "realWorldApplications": [],
+    "futureRoadmap": [],
+    "environmentalImpact": []
+  },
+  "children": [
+    { "name": "Agata Wojtatowicz", "description": "Organizational Development Manager at People & Talent", "flag_midnight": "0" },
+    { "name": "Anastasia Poukamisa", "description": "Senior People Business Partner (Team Lead) at People & Talent", "flag_midnight": "0" },
+    { "name": "Chaz Flora", "description": "People Business Partner at People & Talent", "flag_midnight": "0" },
+    { "name": "Clara Patterson", "description": "Benefits Analyst at People & Talent", "flag_midnight": "0" },
+    { "name": "David Rountree", "description": "Senior Talent Acquisition Manager at People & Talent", "flag_midnight": "0" },
+    { "name": "David Torres-Romero", "description": "Executive Talent Partner at People & Talent", "flag_midnight": "0" },
+    { "name": "Fernando Delgado", "description": "Director of Talent Acquisition at People & Talent", "flag_midnight": "0" },
+    { "name": "Glenda Shore", "description": "Chief People Officer at People & Talent", "flag_midnight": "0" },
+    { "name": "Jeff Prater", "description": "Talent Partner at People & Talent", "flag_midnight": "0" },
+    { "name": "Jess Dampa", "description": "Compliance Partner at People & Talent", "flag_midnight": "0" },
+    { "name": "Jodi Cottell", "description": "People Operations Generalist at People & Talent", "flag_midnight": "0" },
+    { "name": "Jordan Gibbons", "description": "People Advisor at People & Talent", "flag_midnight": "0" },
+    { "name": "Kathryn Markey", "description": "Learning and Development Partner at People & Talent", "flag_midnight": "0" },
+    { "name": "Kim Lynn", "description": "Senior People Business Partner (Team Lead) at People & Talent", "flag_midnight": "0" },
+    { "name": "Lisa Oldfield", "description": "Global Senior Compensation Analyst at People & Talent", "flag_midnight": "0" },
+    { "name": "Mario Nicolaides", "description": "Technical Recruiter at People & Talent", "flag_midnight": "0" },
+    { "name": "Meghan Jagisch", "description": "Head of Total Rewards at People & Talent", "flag_midnight": "0" },
+    { "name": "Melinda Spengler", "description": "People Operations Manager at People & Talent", "flag_midnight": "0" },
+    { "name": "Olivia Vazquez", "description": "Head of People Operations at People & Talent", "flag_midnight": "0" },
+    { "name": "Paushali Bhowmik", "description": "Talent Partner at People & Talent", "flag_midnight": "0" },
+    { "name": "Rosie Nugent", "description": "Head of People Engagement at People & Talent", "flag_midnight": "0" },
+    { "name": "Ryan Fox", "description": "Executive Recruiter at People & Talent", "flag_midnight": "0" },
+    { "name": "Shaunagh Quinlan", "description": "People Business Partner at People & Talent", "flag_midnight": "0" },
+    { "name": "Sheridan Williams", "description": "Senior Talent Acquisition Consultant at People & Talent", "flag_midnight": "0" },
+    { "name": "Simon Allen", "description": "Technical Recruiter at People & Talent", "flag_midnight": "0" }
+  ]
+};

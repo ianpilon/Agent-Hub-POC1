@@ -1,0 +1,43 @@
+export const marketing = {
+  "name": "Marketing",
+  "description": {
+    "briefDefinition": "Marketing department responsible for brand management, events, and communications.",
+    "keyStatistics": [],
+    "majorEcosystemComponents": [],
+    "keyOrganizations": [],
+    "notableFeatures": [],
+    "ecosystemHighlights": {},
+    "communityEngagement": [],
+    "interoperability": [],
+    "realWorldApplications": [],
+    "futureRoadmap": [],
+    "environmentalImpact": []
+  },
+  "children": [
+    { "name": "Agata Stasiuk", "description": "Project Manager at Marketing", "flag_midnight": "0" },
+    { "name": "Alec Jordan", "description": "Video Editor at Marketing", "flag_midnight": "0" },
+    { "name": "Amrit Panesar", "description": "UI/UX Designer at Marketing", "flag_midnight": "0" },
+    { "name": "Anastassia Nilova", "description": "Communications & Social Media Manager at Marketing", "flag_midnight": "0" },
+    { "name": "Andrew Kwon", "description": "VP - Marketing at Marketing", "flag_midnight": "0" },
+    { "name": "Andrew Larbi", "description": "UI Designer at Marketing", "flag_midnight": "0" },
+    { "name": "Bilal Ikram", "description": "Marketing Automation Specialist at Marketing", "flag_midnight": "0" },
+    { "name": "Charlene Edwardson", "description": "Senior Front End Developer at Marketing", "flag_midnight": "0" },
+    { "name": "Dan Morley-Fletcher", "description": "Social Content Designer at Marketing", "flag_midnight": "0" },
+    { "name": "Daniela Raureanu IOHK", "description": "Head of Events at Marketing", "flag_midnight": "0" },
+    { "name": "Fernando Sanchez", "description": "Senior Writer at Marketing", "flag_midnight": "0" },
+    { "name": "Filip Stoyanov", "description": "Front End Developer at Marketing", "flag_midnight": "0" },
+    { "name": "George Olexa", "description": "SVP - Marketing - IOG at Marketing", "flag_midnight": "0" },
+    { "name": "Ian Hansson", "description": "Head of Web Development at Marketing", "flag_midnight": "0" },
+    { "name": "Ivan Irakoze", "description": "Blog/Feature Writer at Marketing", "flag_midnight": "0" },
+    { "name": "Jenna Holmes", "description": "Head of Marketing - Lace at Marketing", "flag_midnight": "0" },
+    { "name": "Jennifer Fedenisn", "description": "External Communications Manager at Marketing", "flag_midnight": "0" },
+    { "name": "Junko Oda", "description": "Translator at Marketing", "flag_midnight": "0" },
+    { "name": "Leandro Dal Molin", "description": "Front End Developer at Marketing", "flag_midnight": "0" },
+    { "name": "LucyPea Pearson", "description": "Senior Copywriter at Marketing", "flag_midnight": "0" },
+    { "name": "Paul Grizzell", "description": "Creative Director at Marketing", "flag_midnight": "0" },
+    { "name": "Shannon Gentry", "description": "Director of Growth Division Operations at Marketing", "flag_midnight": "0" },
+    { "name": "Stevie Simpson", "description": "Senior Events Manager at Marketing", "flag_midnight": "0" },
+    { "name": "Tony Quinn", "description": "Content Editor at Marketing", "flag_midnight": "0" },
+    { "name": "Will Fricker", "description": "Social Media Strategist at Marketing", "flag_midnight": "0" }
+  ]
+};

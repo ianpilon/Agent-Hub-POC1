@@ -1,0 +1,41 @@
+export const ecosystemCommunity = {
+  "name": "Ecosystem & Community",
+  "description": {
+    "briefDefinition": "Ecosystem & Community department focusing on developer relations, education, and community growth.",
+    "keyStatistics": [],
+    "majorEcosystemComponents": [],
+    "keyOrganizations": [],
+    "notableFeatures": [],
+    "ecosystemHighlights": {},
+    "communityEngagement": [],
+    "interoperability": [],
+    "realWorldApplications": [],
+    "futureRoadmap": [],
+    "environmentalImpact": []
+  },
+  "children": [
+    { "name": "Alejandro Garcia", "description": "Education Lead - Agile at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Alexey Sorokin", "description": "Education Specialist at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Antonio Ibarra", "description": "Senior Education Specialist at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Arturo Arturo Mora", "description": "Educational Lead Curriculum at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Ben Corroon", "description": "Community Experience Lead at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Ben O'Hanlon", "description": "Director of Community and Developer Relations at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Chris Ghent", "description": "Chief Growth Officer at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Danny Ribar", "description": "Head of Community Operations at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Emmanuel Ameh", "description": "Technical Writer at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Fayyaadh Adams", "description": "Community Manager at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Jesse Smith", "description": "Education Specialist at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Joseph Fajen", "description": "Senior Technical Writer at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Karina Chaires López", "description": "Educational Lead - Technical at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Lars Brünjes", "description": "Director of Education at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Luka Kurnjek", "description": "Education Specialist at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Neil Burgess", "description": "Technical Writer at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Niamh Ahern", "description": "Education Manager at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Olga Hryniuk", "description": "Technical Writing Manager at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Robertino Martinez", "description": "Educational Lead - Delivery at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Rupert Whitehead IOHK", "description": "Developer Relations Lead at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Tim Harrison IOHK", "description": "EVP of Community & Ecosystem at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "TK Princewill", "description": "Community Manager at Ecosystem & Community", "flag_midnight": "0" },
+    { "name": "Tsenguun Erdenejargal", "description": "Senior Education Specialist at Ecosystem & Community", "flag_midnight": "0" }
+  ]
+};

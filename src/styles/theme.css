@@ -1,0 +1,134 @@
+/* Modern color theme for IOG application - 2025 edition */
+
+:root {
+  /* Base colors - Light theme */
+  --background: 0 0% 100%;
+  --foreground: 224 71.4% 4.1%;
+  
+  /* Primary brand color - Vibrant blue */
+  --primary: 210 100% 50%;
+  --primary-foreground: 0 0% 100%;
+  
+  /* Accent color - Vibrant orange */
+  --accent: 24 100% 50%;
+  --accent-foreground: 0 0% 100%;
+  
+  /* Secondary colors */
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  
+  /* Card and component colors */
+  --card: 0 0% 100%;
+  --card-foreground: 224 71.4% 4.1%;
+  
+  /* Border colors */
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  
+  /* Muted interface elements */
+  --muted: 220 14.3% 95.9%;
+  --muted-foreground: 220 8.9% 46.1%;
+  
+  /* Popover and dialog colors */
+  --popover: 0 0% 100%;
+  --popover-foreground: 224 71.4% 4.1%;
+
+  /* Interaction states */
+  --ring: 210 100% 50%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  /* Base colors - Dark theme */
+  --background: 224 71.4% 4.1%;
+  --foreground: 210 20% 98%;
+  
+  /* Primary brand color - Same hue but adjusted for dark mode */
+  --primary: 210 100% 60%;
+  --primary-foreground: 0 0% 100%;
+  
+  /* Accent color - Same hue but adjusted for dark mode */
+  --accent: 24 100% 60%;
+  --accent-foreground: 0 0% 100%;
+  
+  /* Secondary colors */
+  --secondary: 215 27.9% 16.9%;
+  --secondary-foreground: 210 20% 98%;
+  
+  /* Card and component colors */
+  --card: 224 71.4% 7%;
+  --card-foreground: 210 20% 98%;
+  
+  /* Border colors */
+  --border: 215 27.9% 16.9%;
+  --input: 215 27.9% 16.9%;
+  
+  /* Muted interface elements */
+  --muted: 215 27.9% 16.9%;
+  --muted-foreground: 217.9 10.6% 64.9%;
+  
+  /* Popover and dialog colors */
+  --popover: 224 71.4% 4.1%;
+  --popover-foreground: 210 20% 98%;
+
+  /* Interaction states */
+  --ring: 210 100% 60%;
+}
+
+/* Navigation-specific styles */
+.nav-sidebar {
+  background-color: hsl(var(--card));
+  border-right: 1px solid hsl(var(--border));
+}
+
+.nav-link {
+  color: hsl(var(--muted-foreground));
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+}
+
+.nav-link.active {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+/* Button styles */
+.btn-primary {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.btn-secondary {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+}
+
+/* Card styles */
+.modern-card {
+  background-color: hsl(var(--card));
+  border-radius: var(--radius);
+  border: 1px solid hsl(var(--border));
+}
+
+/* Custom scrollbar for a more modern look */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted)); 
+}
+ 
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground));
+  border-radius: var(--radius);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary)); 
+}
